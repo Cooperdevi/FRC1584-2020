@@ -11,15 +11,16 @@
 
 #include <frc/smartdashboard/SmartDashboard.h>
 
-
+/*
 typedef enum{AUTO_ANGLE, AUTO_DRIVE, AUTO_AIM, AUTO_SHOOT, AUTO_STOP} command_t;
 typedef struct {
 	command_t command;
 	long distance;
 	float heading;
-} wayPoint_t;
+} wayPoint_t; */
 Robot::Robot() :
-DriverController(0), position(0), wayPointSet(WP4)//, DriveDisable(false), ShooterDisable(false), AimDisable(false), ClimbDisable(false), IntakeDisable(false)
+DriverController(0), position(0), wayPointSet(WP4), firstAngle(true), firstDrive(true)
+//, DriveDisable(false), ShooterDisable(false), AimDisable(false), ClimbDisable(false), IntakeDisable(false)
 {
 }
 
@@ -75,17 +76,25 @@ void Robot::AutonomousPeriodic() {
  // }
   switch(wayPointSet->command) {
     case AUTO_ANGLE : 
-      Drive.SetAngle(Drive.GetAngle());
+      if(firstAngle) {
+        Drive.SetAngle(Drive.GetAngle());
+        firstAngle = false;
+      }
       Drive.TurnToAngle(wayPointSet->heading);
       if(fabs(wayPointSet->heading - Drive.GetAngle()) < DRIVE_ANGLE_TOLERANCE) { //make store once
+       firstAngle = true;
        wayPointSet++;
       }
       break;
     case AUTO_DRIVE :
       Drive.SetDistance(Drive.GetLeftPosition());
-      double originalDistance = Drive.GetLeftPosition();
+      if(firstDrive) {
+        firstDrive = false;
+        originalDistance = Drive.GetLeftPosition();
+      }
       Drive.MoveToDistance(wayPointSet->distance);
-      if(fabs(wayPointSet->distance - (Drive.GetLeftPosition() - originalDistance) < DRIVE_DISTANCE_TOLERANCE)) {
+      if(fabs(wayPointSet->distance - (Drive.GetLeftPosition() - originalDistance)) < DRIVE_DISTANCE_TOLERANCE) {
+        firstDrive = true;
         wayPointSet++;
       }
       break;

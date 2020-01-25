@@ -13,8 +13,10 @@ VisionProcessing::VisionProcessing():
 {
 
 }
+
+
 void VisionProcessing::Initialize() {
-    auto table = nt::NetworkTable::GetTable("chameleon-vision/MyCamName");
+    auto table = NetworkTable::GetTable("chameleon-vision/MyCamName");
     nt::NetworkTableEntry TargetX = table->GetEntry("yaw");
     nt::NetworkTableEntry TargetY = table->GetEntry("pitch");
 }

@@ -17,13 +17,13 @@
 #include "Launcher.h"
 #include "Intake.h"
 #include "VisionProcessing.h"
-/*
+
 typedef enum{AUTO_ANGLE, AUTO_DRIVE, AUTO_AIM, AUTO_SHOOT, AUTO_STOP} command_t;
 typedef struct {
 	command_t command;
 	long distance;
 	float heading;
-} wayPoint_t; */
+} wayPoint_t; 
 class Robot : public frc::TimedRobot {
  public:
   Robot();
@@ -54,7 +54,7 @@ class Robot : public frc::TimedRobot {
   int position;
   wayPoint_t* wayPointSet;
   wayPoint_t* WP[5] =	{WP0, WP1, WP2, WP3, WP4};
-  wayPoint_t WP0[6] = { 
+  wayPoint_t WP0[6] = { //right to left from driver's view; last is default (just move)
     {AUTO_ANGLE, 0, 30},
     {AUTO_DRIVE, 40000, 0},
     {AUTO_ANGLE, 0, -30},
@@ -87,6 +87,7 @@ class Robot : public frc::TimedRobot {
     {AUTO_DRIVE, 40000, 0},
     {AUTO_STOP, 0, 0}
   };
-
+  double originalDistance;
+  bool firstAngle, firstDrive;
 
 };
