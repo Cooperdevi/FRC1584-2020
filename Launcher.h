@@ -18,7 +18,11 @@ class Launcher {
   void SpinUpMax();
   void SpinUpPartial(double speed);
   void StopSpin();
-  private:
+  void Aim(double distance);
+  void ShootFullAuto();
+  void StopShooting();
+  int Capacity();
+private:
   ctre::phoenix::motorcontrol::can::WPI_VictorSPX ShooterMain, ShooterFollow;
   ctre::phoenix::motorcontrol::can::WPI_TalonSRX Trigger;
   frc::Timer TriggerTimer;

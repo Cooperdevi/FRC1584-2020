@@ -10,8 +10,16 @@
 #include <iostream>
 
 #include <frc/smartdashboard/SmartDashboard.h>
+
+
+typedef enum{AUTO_ANGLE, AUTO_DRIVE, AUTO_AIM, AUTO_SHOOT, AUTO_STOP} command_t;
+typedef struct {
+	command_t command;
+	long distance;
+	float heading;
+} wayPoint_t;
 Robot::Robot() :
-DriverController(0)
+DriverController(0), position(0), wayPointSet(WP4)//, DriveDisable(false), ShooterDisable(false), AimDisable(false), ClimbDisable(false), IntakeDisable(false)
 {
 }
 
@@ -19,6 +27,7 @@ void Robot::RobotInit() {
   m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
   m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
   frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
+  Targeting.Initialize();
 }
 
 /**
@@ -34,7 +43,7 @@ void Robot::RobotPeriodic() {}
 /**
  * This autonomous (along with the chooser code above) shows how to select
  * between different autonomous modes using the dashboard. The sendable chooser
- * code works with the Java SmartDashboard. If you prefer the LabVIEW Dashboard,
+ * code works with the Java SmartD`ashboard. If you prefer the LabVIEW Dashboard,
  * remove all of the chooser code and uncomment the GetString line to get the
  * auto name from the text box below the Gyro.
  *
@@ -43,24 +52,62 @@ void Robot::RobotPeriodic() {}
  * make sure to add them to the chooser code above as well.
  */
 void Robot::AutonomousInit() {
-  m_autoSelected = m_chooser.GetSelected();
-  // m_autoSelected = SmartDashboard::GetString("Auto Selector",
-  //     kAutoNameDefault);
-  std::cout << "Auto selected: " << m_autoSelected << std::endl;
+ //// m_autoSelected = m_chooser.GetSelected();
+ ///  m_autoSelected = SmartDashboard::GetString("Auto Selector",
+ //      kAutoNameDefault);
+ // std::cout << "Auto selected: " << m_autoSelected << std::endl;
+  position = (int) frc::SmartDashboard::GetNumber("Auto Select", 6);
+		frc::SmartDashboard::PutNumber("Auto Select", position);
 
-  if (m_autoSelected == kAutoNameCustom) {
+  //if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
-  } else {
+ // } else {
     // Default Auto goes here
-  }
+ // }
+ 			wayPointSet = WP[position];
 }
 
 void Robot::AutonomousPeriodic() {
-  if (m_autoSelected == kAutoNameCustom) {
+  //if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
-  } else {
+//  } else {
     // Default Auto goes here
+ // }
+  switch(wayPointSet->command) {
+    case AUTO_ANGLE : 
+      Drive.SetAngle(Drive.GetAngle());
+      Drive.TurnToAngle(wayPointSet->heading);
+      if(fabs(wayPointSet->heading - Drive.GetAngle()) < DRIVE_ANGLE_TOLERANCE) { //make store once
+       wayPointSet++;
+      }
+      break;
+    case AUTO_DRIVE :
+      Drive.SetDistance(Drive.GetLeftPosition());
+      double originalDistance = Drive.GetLeftPosition();
+      Drive.MoveToDistance(wayPointSet->distance);
+      if(fabs(wayPointSet->distance - (Drive.GetLeftPosition() - originalDistance) < DRIVE_DISTANCE_TOLERANCE)) {
+        wayPointSet++;
+      }
+      break;
+    case AUTO_AIM : 
+      Drive.Aim(Targeting.ErrorAngle());
+      Shooter.Aim(Targeting.Distance());
+      if(fabs(Targeting.ErrorAngle()) < ANGLE_TOLERANCE) {
+        wayPointSet++;
+      }
+      break;
+    case AUTO_SHOOT : 
+      Shooter.ShootFullAuto();
+      if(Shooter.Capacity() <= 0) {
+        wayPointSet++;
+      }
+      break;
+    case AUTO_STOP :
+      Shooter.StopSpin();
+      Shooter.StopShooting();
+      break;
   }
+
 }
 
 void Robot::TeleopInit() {}
@@ -68,6 +115,8 @@ void Robot::TeleopInit() {}
 void Robot::TeleopPeriodic() {
   RunDrive();
   RunShooter();
+  RunAim();
+  RunIntake();
 }
 
 void Robot::TestPeriodic() {}
@@ -81,19 +130,47 @@ void Robot::RunShooter() {
   if(DriverController.JustPressed(SHOOT)) {
     Shooter.Shoot();
   }
-  if(DriverController.JustPressed(SPIN_MAX)) {
+  if(DriverController.JustPressed(SHOOTER_SPIN_MAX)) {
     Shooter.SpinUpMax();
   }
-  else if(DriverController.JustPressed(STOP)) {
+  else if(DriverController.JustPressed(SHOOTER_STOP)) {
     Shooter.StopSpin();
   }
-  else if(DriverController.JustPressed(SPIN_PARTIAL)) {
+  else if(DriverController.JustPressed(SHOOTER_SPIN_PARTIAL)) {
     Shooter.SpinUpPartial(storedShootSpeed);
   }
   else if(DriverController.GetRawButton(SET_SPEED)) {
     storedShootSpeed = DriverController.GetX();
   }
   
+}
+void Robot::RunAim() {
+  if(DriverController.GetRawButton(AIM)) {
+    Drive.Aim(Targeting.ErrorAngle());
+    Shooter.Aim(Targeting.Distance());
+  }
+}
+
+void Robot::RunIntake() {
+  double storedIntakeSpeed = 0;
+  if(DriverController.JustPressed(INTAKE_SPIN_MAX)) {
+    Entry.SpinUpMax();
+  }
+  else if(DriverController.JustPressed(INTAKE_STOP)) {
+    Entry.Stop();
+  }
+  else if(DriverController.JustPressed(SHOOTER_SPIN_PARTIAL)) {
+    Shooter.SpinUpPartial(storedIntakeSpeed);
+  }
+  else if(DriverController.GetRawButton(SET_SPEED)) {
+    storedIntakeSpeed = DriverController.GetX();
+  }
+  if(DriverController.GetRawButton(UNJAM)) {
+    Entry.Unjam();
+  }
+  else {
+    Entry.Stop();
+  }
 }
 #ifndef RUNNING_FRC_TESTS
 int main() { return frc::StartRobot<Robot>(); }

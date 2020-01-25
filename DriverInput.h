@@ -15,7 +15,7 @@
 class DriverInput: public frc::Joystick {
 public:
 	DriverInput(int ID);
-	virtual ~DriverInput();
+	//virtual ~DriverInput();
 	double GetTruePOV();
 
 	//when the button is just pressed

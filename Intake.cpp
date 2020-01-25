@@ -7,4 +7,27 @@
 
 #include "Intake.h"
 
-Intake::Intake() {}
+Intake::Intake():
+IntakeMain(INTAKE_MAIN), IntakeFollow(INTAKE_FOLLOW), Conveyor(CONVEYOR)
+{
+    IntakeFollow.Set(ctre::phoenix::motorcontrol::ControlMode::Follower, INTAKE_MAIN);
+    Conveyor.Set(ctre::phoenix::motorcontrol::ControlMode::Follower, SHOOTER_MAIN);
+
+ 
+}
+
+void Intake::SpinUpMax() {
+    SetIntakeSpeed(1);
+}
+
+void Intake::SpinUpPartial(double speed) {
+    SetIntakeSpeed(speed);
+}
+
+void Intake::Unjam() {
+    SetIntakeSpeed(-1);
+}
+
+void Intake::Stop() {
+    SetIntakeSpeed(0);
+}

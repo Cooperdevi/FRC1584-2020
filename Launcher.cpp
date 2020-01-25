@@ -40,3 +40,19 @@ void Launcher::SpinUpPartial(double speed) {
 void Launcher::StopSpin() {
     SetSpin(0);
 }
+
+void Launcher::Aim(double distance) {
+    double power = sqrt((distance * GRAVITY) / (RANGE_PROPORTION * SIN_ANGLE)) / MAX_VELOCITY;
+    SetSpin(power); 
+    
+}
+
+void Launcher::ShootFullAuto() {
+    Trigger.Set(TRIGGER_POWER);
+}
+void Launcher::StopShooting() {
+    Trigger.Set(0);
+}
+int Launcher::Capacity() {
+//implement later
+}

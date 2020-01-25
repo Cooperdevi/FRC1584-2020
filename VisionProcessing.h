@@ -6,19 +6,23 @@
 /*----------------------------------------------------------------------------*/
 
 #pragma once
-#include "ctre/phoenix/motorcontrol/can/WPI_VictorSPX.h"
-#include "ctre/phoenix/motorcontrol/can/WPI_TalonSRX.h"
+#include "networktables/NetworkTable.h"
+#include "networktables/NetworkTableEntry.h"
+#include "networktables/NetworkTableInstance.h"
 #include "OurDefines.h"
-class Intake {
+#include "frc/Ultrasonic.h"
+
+class VisionProcessing {
  public:
-  Intake();
-  void SpinUpMax();
-  void SpinUpPartial(double speed);
-  void Unjam();
-  void Stop();
-  private: 
-    ctre::phoenix::motorcontrol::can::WPI_TalonSRX IntakeMain, IntakeFollow, Conveyor;
-    void SetIntakeSpeed(double speed) {
-      IntakeMain.Set(speed);
-    }
+  VisionProcessing();
+  double ErrorRange();
+  double ErrorAngle();
+  void Initialize();
+  double Distance();
+  private:
+  std::shared_ptr<NetworkTable> table;
+  nt::NetworkTableEntry TargetX, TargetY;
+  frc::Ultrasonic DistanceFinder;
+ // double /* distanceError,*/ angleError, /*kpDistance,*/ kpAngle, minForce, angleTolerance;
+
 };

@@ -6,8 +6,11 @@
 /*----------------------------------------------------------------------------*/
 
 #pragma once
+#include "ctre/phoenix/motorcontrol/can/WPI_TalonSRX.h"
 
 class Climber {
  public:
   Climber();
+ private:
+  
 };
