@@ -1,10 +1,10 @@
 //Speed Controllers
 #define LT_TALON 1
-#define LF_TALON 2
-#define LR_TALON 3
+#define LF_TALON 10
+#define LR_TALON 11
 #define RT_TALON 4
-#define RF_TALON 5
-#define RR_TALON 6
+#define RF_TALON 12
+#define RR_TALON 13
 
 #define SHOOTER_MAIN 7
 #define SHOOTER_FOLLOW 8
@@ -16,6 +16,18 @@
 
 #define TRIGGER_TIME .2
 #define TRIGGER_POWER .2
+#define RUN_SPEED .3
+
+
+#define MAX_DIST_5 35
+#define MIN_DIST_5 28
+#define MIN_DIST_4 21
+#define MIN_DIST_3 14
+#define MIN_DIST_2 7
+#define MIN_DIST_1 0
+
+
+
 
 
 #define SHOOT 1
@@ -23,7 +35,9 @@
 #define SHOOTER_STOP 3
 #define SHOOTER_SPIN_PARTIAL 4
 #define SET_SPEED 5
-
+#define SPEED_TOLERANCE 50
+#define P_SHOOTER .05
+#define MAX_SPEED 5500
 
 #define INTAKE_SPIN_MAX 6
 #define INTAKE_STOP 7

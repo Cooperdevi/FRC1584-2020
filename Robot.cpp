@@ -2,7 +2,11 @@
 /* Copyright (c) 2017-2018 FIRST. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
 /* must be accompanied by the FIRST BSD license file in the root directory of */
-/* the project.                                                               */
+/* the project.                                   
+TODO:
+Field oriented control
+Feedback loop for shooter   
+Configure radio                         */
 /*----------------------------------------------------------------------------*/
 
 #include "Robot.h"
@@ -39,7 +43,9 @@ void Robot::RobotInit() {
  * <p> This runs after the mode specific periodic functions, but before
  * LiveWindow and SmartDashboard integrated updating.
  */
-void Robot::RobotPeriodic() {}
+void Robot::RobotPeriodic() {
+  Shooter.SetFollower();
+}
 
 /**
  * This autonomous (along with the chooser code above) shows how to select
@@ -65,7 +71,7 @@ void Robot::AutonomousInit() {
  // } else {
     // Default Auto goes here
  // }
- 			wayPointSet = WP[position];
+ 			wayPointSet = WP[position];  
 }
 
 void Robot::AutonomousPeriodic() {
@@ -131,7 +137,7 @@ void Robot::TeleopPeriodic() {
 void Robot::TestPeriodic() {}
 
 void Robot::RunDrive() {
-  Drive.ManualDrive(DriverController.GetY(), DriverController.GetX());
+  Drive.ManualDrive(-DriverController.GetY(), DriverController.GetX());
  
 }
 void Robot::RunShooter() {

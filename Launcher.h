@@ -10,6 +10,7 @@
 #include "ctre/phoenix/motorcontrol/can/WPI_TalonSRX.h"
 #include "OurDefines.h"
 #include "frc/Timer.h"
+#include "frc/Ultrasonic.h"
 
 class Launcher {
  public:
@@ -21,10 +22,15 @@ class Launcher {
   void Aim(double distance);
   void ShootFullAuto();
   void StopShooting();
+  void SetFollower();
   int Capacity();
 private:
-  ctre::phoenix::motorcontrol::can::WPI_VictorSPX ShooterMain, ShooterFollow;
+  ctre::phoenix::motorcontrol::can::WPI_TalonSRX ShooterMain, ShooterFollow;
   ctre::phoenix::motorcontrol::can::WPI_TalonSRX Trigger;
   frc::Timer TriggerTimer;
   void SetSpin(double speed);
+  double currentSpeed;
+  frc::Ultrasonic CapacitySensor;
+  ctre::phoenix::motorcontrol::SensorCollection& Main, Follower;
+  double desiredSpeed;
 };

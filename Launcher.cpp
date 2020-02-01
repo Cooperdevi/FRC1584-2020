@@ -8,9 +8,9 @@
 #include "Launcher.h"
 
 Launcher::Launcher() :
-ShooterMain(SHOOTER_MAIN), ShooterFollow(SHOOTER_FOLLOW), Trigger(TRIGGER)
+ShooterMain(SHOOTER_MAIN), ShooterFollow(SHOOTER_FOLLOW), Trigger(TRIGGER), currentSpeed(0), CapacitySensor(US_PING, US_ECHO), Main(ShooterMain.GetSensorCollection()), Follower(ShooterFollow.GetSensorCollection()), desiredSpeed(0)
 {
-    ShooterFollow.Set(ctre::phoenix::motorcontrol::ControlMode::Follower, SHOOTER_MAIN);
+   // ShooterFollow.Set(ctre::phoenix::motorcontrol::ControlMode::Follower, SHOOTER_MAIN);
 }
 
 void Launcher::Shoot() {
@@ -31,9 +31,12 @@ void Launcher::SpinUpMax() {
 
 void Launcher::SetSpin(double speed) {
     ShooterMain.Set(speed);
+    currentSpeed = speed;
+    desiredSpeed = currentSpeed;
 }
 
 void Launcher::SpinUpPartial(double speed) {
+    currentSpeed = speed;
     SetSpin(speed);
 }
 
@@ -54,5 +57,38 @@ void Launcher::StopShooting() {
     Trigger.Set(0);
 }
 int Launcher::Capacity() {
-//implement later
+    double distance = CapacitySensor.GetRangeInches();
+    int output;
+    if(currentSpeed < RUN_SPEED) {
+        if(distance > MAX_DIST_5 && distance < MIN_DIST_5) {
+            output = 5;
+        }
+        else if(distance > MIN_DIST_4) {
+            output = 4;
+        }
+        else if(distance > MIN_DIST_3) {
+            output = 3;
+        }
+        else if (distance > MIN_DIST_2) {
+            output = 2;
+        }
+        else {
+            output = 1;
+        }
+        return output;
+   }
+//implement later.. ultrasonic?
+}
+
+void Launcher::SetFollower() {
+    int mainSpeed = Main.GetQuadratureVelocity();
+    int followerSpeed = Follower.GetQuadratureVelocity();
+    int speedDifferential = mainSpeed - followerSpeed;
+    if(abs(speedDifferential) >  SPEED_TOLERANCE) {
+      desiredSpeed += P_SHOOTER * (speedDifferential/MAX_SPEED);
+    }
+    if(fabs(desiredSpeed) > 1) {
+        desiredSpeed = desiredSpeed/fabs(desiredSpeed);
+    }
+    ShooterFollow.Set(desiredSpeed);
 }
