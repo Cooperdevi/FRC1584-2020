@@ -1,8 +1,8 @@
 #include "LIDARLite_v3.h"
 
 
-	LIDARLite_v3::LIDARLite_v3(frc::I2C::Port *port) 
-    // m_port(static_cast<char>(port->value))
+	LIDARLite_v3::LIDARLite_v3(frc::I2C::Port *port):  
+     m_port(HAL_I2CPort::HAL_I2C_kOnboard) //figure this out
 	{
         int32_t * status;
 		HAL_InitializeI2C(m_port, status);

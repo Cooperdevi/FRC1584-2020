@@ -26,13 +26,16 @@ Robot::Robot() :
 DriverController(0), position(0), wayPointSet(WP4), firstAngle(true), firstDrive(true)
 //, DriveDisable(false), ShooterDisable(false), AimDisable(false), ClimbDisable(false), IntakeDisable(false)
 {
+  std::cout << "Start" << std::endl;
 }
 
 void Robot::RobotInit() {
+  std::cout << "RobotInitT" << std::endl;
   m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
   m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
   frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
   Targeting.Initialize();
+  std::cout << "RobotInitB" << std::endl;
 }
 
 /**
