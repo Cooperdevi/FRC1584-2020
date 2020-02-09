@@ -15,6 +15,8 @@
 #include <sstream>
 #include "hal/HAL.h"
 #include "hal/I2CTypes.h"
+#include <iostream>
+#include <chrono>
 //#include "frc/hal/I2CJNI.h"
 
 	class LIDARLite_v3 : public frc::PIDSource

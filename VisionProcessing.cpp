@@ -8,7 +8,9 @@
 #include "VisionProcessing.h"
 
 VisionProcessing::VisionProcessing() :
-    DistanceFinder(0)
+DistanceFinder(frc::I2C::Port::kOnboard, 0x62)
+ //  DistanceFinder(0)
+//  DistanceFinder(2, 3)
 //angleError(CONSTANT_ANGLE_CHANGE), minForce(MINIMUM_FORCE), angleTolerance(ANGLE_DEADZONE)//, TargetTable(NetworkTableInstance.getDefault().getTable("chameleon-vision").getSubTable("MyCamName"))
 {
 
@@ -19,7 +21,7 @@ void VisionProcessing::Initialize() {
     auto table = NetworkTable::GetTable("chameleon-vision/MicrosoftLifecamHD3000");
     nt::NetworkTableEntry TargetX = table->GetEntry("yaw");
     nt::NetworkTableEntry TargetY = table->GetEntry("pitch");
-    DistanceFinder.startMeasuring();
+//    DistanceFinder.startMeasuring();
 }
 
 double VisionProcessing::ErrorRange() {
@@ -31,5 +33,6 @@ double VisionProcessing::ErrorAngle() {
 }
 
 double VisionProcessing::Distance() {
-    return DistanceFinder.getDistance();
+    return DistanceFinder.getDistance() / 2.54;
+  //  return DistanceFinder.GetRangeInches();
 }

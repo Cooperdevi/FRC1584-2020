@@ -21,19 +21,28 @@ class DriveTrain : public frc::DifferentialDrive {
   void Aim(double error);
   double GetLeftPosition();
   double GetRightPosition();
+  double GetLeftVelocity();
+  double GetRightVelocity();
   void TurnToAngle(double angle);
   double GetAngle();
   void SetAngle(double angle);
   void MoveToDistance(double distance);
   void SetDistance(double distance);
+  void SetVelocity(double velocity);
+  bool IsStopped();
+
   //void AutoDrive(int position);
   private:
-    ctre::phoenix::motorcontrol::can::WPI_TalonFX /*ltTalon,*/ lfTalon, lrTalon, /*rtTalon,*/ rfTalon, rrTalon;
+    ctre::phoenix::motorcontrol::can::WPI_TalonFX /*ltTalon,*/ lfTalon,  /*rtTalon,*/ rfTalon, lrTalon, rrTalon;
 //  ctre::phoenix::motorcontrol::TalonFXSensorCollection::TalonFXSensorCollection left, right;
-  ctre::phoenix::motorcontrol::TalonFXSensorCollection& left, right;
+    ctre::phoenix::motorcontrol::TalonFXSensorCollection& left, right;
         frc::ADIS16448_IMU Gyro;
         double originalAngle;
         double originalLeftPosition;
-
+    double SignOf(double input);
+    bool looping;
+    bool preventLooping;
+    void AllowLooping();
+    void EndLooping();
    
 };

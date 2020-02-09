@@ -8,10 +8,10 @@
 #include "Intake.h"
 
 Intake::Intake():
-IntakeMain(INTAKE_MAIN), IntakeFollow(INTAKE_FOLLOW), Conveyor(CONVEYOR)
+IntakeMain(INTAKE_MAIN)//, /* IntakeFollow(INTAKE_FOLLOW), */ Conveyor(CONVEYOR)
 {
-    IntakeFollow.Set(ctre::phoenix::motorcontrol::ControlMode::Follower, INTAKE_MAIN);
-    Conveyor.Set(ctre::phoenix::motorcontrol::ControlMode::Follower, SHOOTER_MAIN);
+   /// IntakeFollow.Set(ctre::phoenix::motorcontrol::ControlMode::Follower, INTAKE_MAIN);
+  //  Conveyor.Set(ctre::phoenix::motorcontrol::ControlMode::Follower, SHOOTER_MAIN);
 
  
 }

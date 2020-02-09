@@ -135,13 +135,27 @@ void Robot::TeleopPeriodic() {
   RunShooter();
   RunAim();
   RunIntake();
+  frc::SmartDashboard::PutNumber("LIDAR", Targeting.Distance());
+  frc::SmartDashboard::PutNumber("LEFTVELOCITY", Drive.GetLeftVelocity());
+  frc::SmartDashboard::PutNumber("RIGHTVELOCITY", Drive.GetRightVelocity());
 }
 
 void Robot::TestPeriodic() {}
 
 void Robot::RunDrive() {
-  Drive.ManualDrive(-DriverController.GetY(), DriverController.GetX());
- 
+   double driveX = fabs(DriverController.GetX()) < .05 ? 0 : DriverController.GetX();
+   double driveY = fabs(DriverController.GetY()) < .05 ? 0 : DriverController.GetY();
+   if(driveX == 0 && driveY == 0) {
+     Drive.SetVelocity(0);
+   }
+   else {
+         Drive.ManualDrive(driveY, driveX);
+   }
+  // if(driveX == 0 || driveY == 0) {
+     std::cout << driveY << ", " << driveX << std::endl; //implement speed feedback loop for stopping when released trigger
+
+ //  }
+
 }
 void Robot::RunShooter() {
   double storedShootSpeed = 0;

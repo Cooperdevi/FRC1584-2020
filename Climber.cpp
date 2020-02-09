@@ -7,4 +7,16 @@
 
 #include "Climber.h"
 
-Climber::Climber() {}
+Climber::Climber():
+ClimberMotor(CLIMBER)
+{
+    ClimberMotor.ConfigForwardLimitSwitchSource(ctre::phoenix::motorcontrol::LimitSwitchSource::LimitSwitchSource_FeedbackConnector, ctre::phoenix::motorcontrol::LimitSwitchNormal::LimitSwitchNormal_NormallyClosed);
+}
+
+void Climber::Release() {
+ //to be implemented 
+}
+
+void Climber::Retract() {
+    ClimberMotor.Set(RETRACT_SPEED);
+}

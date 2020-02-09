@@ -11,7 +11,9 @@
 #include "networktables/NetworkTableInstance.h"
 #include "OurDefines.h"
 #include "frc/Ultrasonic.h"
-#include "LIDARLite_v3.h"
+//#include "LIDARLite_v3.h"
+#include "LidarI2C.h"
+//#include "Lidar.h"
 
 class VisionProcessing {
  public:
@@ -23,7 +25,8 @@ class VisionProcessing {
   private:
   std::shared_ptr<NetworkTable> table;
   nt::NetworkTableEntry TargetX, TargetY;
-  LIDARLite_v3 DistanceFinder;
+  LidarI2C DistanceFinder;
+//  LIDARLite_v3 DistanceFinder;Lidar
  // frc::Ultrasonic DistanceFinder;
  // double /* distanceError,*/ angleError, /*kpDistance,*/ kpAngle, minForce, angleTolerance;
 

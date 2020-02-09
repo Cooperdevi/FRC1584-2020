@@ -2,9 +2,9 @@
 
 
 	LIDARLite_v3::LIDARLite_v3(frc::I2C::Port *port):  
-     m_port(HAL_I2CPort::HAL_I2C_kOnboard) //figure this out
+     m_port(HAL_I2CPort::HAL_I2C_kOnboard) 
 	{
-        int32_t * status;
+        int32_t *status;
 		HAL_InitializeI2C(m_port, status);
 	}
 

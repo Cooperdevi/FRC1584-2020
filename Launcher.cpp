@@ -10,6 +10,8 @@
 Launcher::Launcher() :
 ShooterMain(SHOOTER_MAIN), ShooterFollow(SHOOTER_FOLLOW), Trigger(TRIGGER), currentSpeed(0), CapacitySensor(US_PING, US_ECHO), Main(ShooterMain.GetSensorCollection()), Follower(ShooterFollow.GetSensorCollection()), desiredSpeed(0)
 {
+    ShooterFollow.Set(ctre::phoenix::motorcontrol::ControlMode::Velocity, Main.GetQuadratureVelocity());
+
    // ShooterFollow.Set(ctre::phoenix::motorcontrol::ControlMode::Follower, SHOOTER_MAIN);
 }
 
@@ -81,7 +83,7 @@ int Launcher::Capacity() {
 }
 
 void Launcher::SetFollower() {
-    int mainSpeed = Main.GetQuadratureVelocity();
+    /*int mainSpeed = Main.GetQuadratureVelocity();
     int followerSpeed = Follower.GetQuadratureVelocity();
     int speedDifferential = mainSpeed - followerSpeed;
     if(abs(speedDifferential) >  SPEED_TOLERANCE) {
@@ -90,5 +92,6 @@ void Launcher::SetFollower() {
     if(fabs(desiredSpeed) > 1) {
         desiredSpeed = desiredSpeed/fabs(desiredSpeed);
     }
-    ShooterFollow.Set(desiredSpeed);
+    ShooterFollow.Set(desiredSpeed);*/
+    ShooterFollow.Set(ctre::phoenix::motorcontrol::ControlMode::Velocity, Main.GetQuadratureVelocity());
 }

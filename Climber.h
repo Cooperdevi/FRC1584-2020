@@ -7,10 +7,14 @@
 
 #pragma once
 #include "ctre/phoenix/motorcontrol/can/WPI_TalonSRX.h"
-
+#include "OurDefines.h"
 class Climber {
  public:
   Climber();
- private:
+  void Release();
+  void Retract();
   
+ private:
+    ctre::phoenix::motorcontrol::can::WPI_TalonSRX ClimberMotor;
+
 };

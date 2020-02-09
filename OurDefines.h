@@ -1,18 +1,18 @@
 //Speed Controllers
-#define LT_TALON 1
+//#define LT_TALON 1
 #define LF_TALON 10
 #define LR_TALON 11
-#define RT_TALON 4
+//#define RT_TALON 4
 #define RF_TALON 12
 #define RR_TALON 13
 
 #define SHOOTER_MAIN 7
 #define SHOOTER_FOLLOW 8
 #define TRIGGER 9
-
-#define INTAKE_MAIN 10
-#define INTAKE_FOLLOW 11
-#define CONVEYOR 12
+#define CLIMBER 14
+#define INTAKE_MAIN 1
+#define INTAKE_FOLLOW 2
+#define CONVEYOR 3
 
 #define TRIGGER_TIME .2
 #define TRIGGER_POWER .2
@@ -58,6 +58,10 @@
 #define SIN_ANGLE 0.866025404 //sine of twice the angle of the cannon
 #define MAX_VELOCITY 57 // the maximum velocity the ball can be shot at
 
+#define VELOCITY_P .05
+#define VELOCITY_TOLERANCE 75
+
+
 #define US_PING 0
 #define US_ECHO 1
 
@@ -68,3 +72,5 @@
 #define DRIVE_DISTANCE_TOLERANCE 100
 #define DRIVE_ANGLE_P -.1
 #define DRIVE_ANGLE_TOLERANCE 3
+
+#define RETRACT_SPEED .35
