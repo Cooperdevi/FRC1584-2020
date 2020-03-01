@@ -37,9 +37,17 @@ public:
 			ReleasedButtons[ButtonNumber] = CurrentValue;
 			return JustReleased;
 		}
+
+		bool JustPressedPOV(int POV);
+		
+
 	private:
 		bool *PressedButtons;
 		bool *ReleasedButtons;
+	//	bool *PressedPOV;
+	//	bool *ReleasedPOV;
 		double currentPOV;
 		int newPOVCount;
+		bool once;
+		//bool once[8] = {false, false, false, false, false, false, false, false};//0, 45, 90, 135, 180, 225, 270, 315};
 };

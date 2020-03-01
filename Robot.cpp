@@ -23,19 +23,40 @@ typedef struct {
 	float heading;
 } wayPoint_t; */
 Robot::Robot() :
-DriverController(0), position(0), wayPointSet(WP4), firstAngle(true), firstDrive(true)
+DriverController(0), position(0), wayPointSet(WP4), firstAngle(true), firstDrive(true), //currentSens(sensitivity[sensI]), currentShoot(shootSpeed[shootI]), currentIntake(intakeSpeed[intakeI]),
+climbUnlock(false), firstIntake(true), aiming(false), lowSens(false), highSens(false),
+autoAngling(false), firstAngling(true)
 //, DriveDisable(false), ShooterDisable(false), AimDisable(false), ClimbDisable(false), IntakeDisable(false)
 {
   std::cout << "Start" << std::endl;
+  sensI = 9;
+  shootI = 9;
+  intakeI = 9;
+  currentSens = sensitivity[sensI];
+  currentShoot = shootSpeed[shootI];
+  currentIntake = intakeSpeed[intakeI];
+
 }
 
 void Robot::RobotInit() {
   std::cout << "RobotInitT" << std::endl;
-  m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
-  m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
-  frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
+ // m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
+ // m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
+ // frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
+  //		frc::SmartDashboard::PutNumber("Auto Select", position);
+ // m_positionChooser.InitSendable( );
+  m_positionChooser.SetDefaultOption("Default", 4);
+  m_positionChooser.AddOption("Left Wall", 3);
+  m_positionChooser.AddOption("Right Wall", 0);
+  m_positionChooser.AddOption("Power Port", 1);
+  m_positionChooser.AddOption("Loading Station", 2);
+  frc::SmartDashboard::PutData("Autonomous Selector", &m_positionChooser);
+
   Targeting.Initialize();
+  Entry.Initialize();
   std::cout << "RobotInitB" << std::endl;
+  std::cout << "POVCOUNT: " << DriverController.GetPOVCount() << std::endl;
+ // Targeting.SwitchMode(true);
 }
 
 /**
@@ -47,13 +68,42 @@ void Robot::RobotInit() {
  * LiveWindow and SmartDashboard integrated updating.
  */
 void Robot::RobotPeriodic() {
-  Shooter.SetFollower();
+ // int sensIShow = sensI;// + 1;
+ // int shootIShow = shootI;// + 1;
+ // int intakeIShow = intakeI;// + 1;
+ std::cout << "setting follower" << std::endl;
+ Shooter.SetFollower(); //  ADD BACK
+  frc::SmartDashboard::PutNumber("Lidar Distance", Targeting.Distance());
+  frc::SmartDashboard::PutNumber("Capacity", Entry.Capacity());
+  frc::SmartDashboard::PutNumber("Speed", Drive.GetLeftVelocity() + Drive.GetRightVelocity());
+  frc::SmartDashboard::PutBoolean("Targeting Available", Targeting.TargetingAvailable());
+  frc::SmartDashboard::PutNumber("Sensitivity", sensI);
+  frc::SmartDashboard::PutNumber("Shooter Speed", shootI);
+  frc::SmartDashboard::PutNumber("Intake Speed", intakeI);
+  frc::SmartDashboard::PutNumber("Left Front", fabs(Drive.GetLeftVelocity()));
+  frc::SmartDashboard::PutNumber("Left Rear", fabs(Drive.GetLeftRearVelocity()));
+  frc::SmartDashboard::PutNumber("Right Front", fabs(Drive.GetRightVelocity()));
+  frc::SmartDashboard::PutNumber("Right Rear", fabs(Drive.GetRightRearVelocity()));
+  frc::SmartDashboard::PutData("Gyro", &Drive.Gyro); 
+  frc::SmartDashboard::PutNumber("YAW", Targeting.ErrorAngle());
+  frc::SmartDashboard::PutNumber("left pos", Drive.GetLeftPosition());
+  frc::SmartDashboard::PutNumber("right pos", Drive.GetRightPosition());
+  frc::SmartDashboard::PutBoolean("climber", climbUnlock);
+  frc::SmartDashboard::PutString("Message",  Status()); // TODO add backStatus());
+  frc::SmartDashboard::PutBoolean("Indicator 1", false);
+  frc::SmartDashboard::PutBoolean("Indicator 2", false);
+  frc::SmartDashboard::PutBoolean("Ready to Shoot", (Targeting.ErrorAngle() < ANGLE_TOLERANCE));
+  frc::SmartDashboard::PutNumber("Encoder Speed", (Shooter.Speed()));
+  frc::SmartDashboard::PutNumber("Encoder Speed Follower", Shooter.FollowerSpeed());
+
+  Entry.Run(); //ADD BACK
+  RunArrays();
 }
 
 /**
  * This autonomous (along with the chooser code above) shows how to select
  * between different autonomous modes using the dashboard. The sendable chooser
- * code works with the Java SmartD`ashboard. If you prefer the LabVIEW Dashboard,
+ * code works with the Java SmartD`ashboard. If you prefer the LstaabVIEW Dashboard,
  * remove all of the chooser code and uncomment the GetString line to get the
  * auto name from the text box below the Gyro.
  *
@@ -65,9 +115,9 @@ void Robot::AutonomousInit() {
  //// m_autoSelected = m_chooser.GetSelected();
  ///  m_autoSelected = SmartDashboard::GetString("Auto Selector",
  //      kAutoNameDefault);
+
  // std::cout << "Auto selected: " << m_autoSelected << std::endl;
-  position = (int) frc::SmartDashboard::GetNumber("Auto Select", 6);
-		frc::SmartDashboard::PutNumber("Auto Select", position);
+      position = (int) m_positionChooser.GetSelected();
 
   //if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
@@ -78,6 +128,7 @@ void Robot::AutonomousInit() {
 }
 
 void Robot::AutonomousPeriodic() {
+  std::cout << "COMMAND: " << wayPointSet->command << std::endl << "WAYPOINT: " << wayPointSet << std::endl << "POSITION: " << position << std::endl;
   //if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
 //  } else {
@@ -86,9 +137,10 @@ void Robot::AutonomousPeriodic() {
   switch(wayPointSet->command) {
     case AUTO_ANGLE : 
       if(firstAngle) {
-        Drive.SetAngle(Drive.GetAngle());
+        Drive.SetAngle();
         firstAngle = false;
       }
+      std::cout << "ANGLE SET" << std::endl;
       Drive.TurnToAngle(wayPointSet->heading);
       if(fabs(wayPointSet->heading - Drive.GetAngle()) < DRIVE_ANGLE_TOLERANCE) { //make store once
        firstAngle = true;
@@ -96,14 +148,15 @@ void Robot::AutonomousPeriodic() {
       }
       break;
     case AUTO_DRIVE :
-      Drive.SetDistance(Drive.GetLeftPosition());
-      if(firstDrive) {
-        firstDrive = false;
-        originalDistance = Drive.GetLeftPosition();
-      }
+   //   Drive.SetDistance(Drive.GetLeftPosition());
+    //  if(firstDrive) {
+    //    firstDrive = false;
+    //    originalDistance = Drive.GetLeftPosition();
+  //    }
       Drive.MoveToDistance(wayPointSet->distance);
-      if(fabs(wayPointSet->distance - (Drive.GetLeftPosition() - originalDistance)) < DRIVE_DISTANCE_TOLERANCE) {
-        firstDrive = true;
+      if(fabs(wayPointSet->distance - Drive.GetLeftPosition()) < DRIVE_DISTANCE_TOLERANCE &&
+       fabs(wayPointSet->distance - Drive.GetRightPosition()) < DRIVE_DISTANCE_TOLERANCE) {
+      //  firstDrive = true;
         wayPointSet++;
       }
       break;
@@ -116,7 +169,7 @@ void Robot::AutonomousPeriodic() {
       break;
     case AUTO_SHOOT : 
       Shooter.ShootFullAuto();
-      if(Shooter.Capacity() <= 0) {
+      if(Entry.Capacity() <= 0) {
         wayPointSet++;
       }
       break;
@@ -135,32 +188,85 @@ void Robot::TeleopPeriodic() {
   RunShooter();
   RunAim();
   RunIntake();
-  frc::SmartDashboard::PutNumber("LIDAR", Targeting.Distance());
-  frc::SmartDashboard::PutNumber("LEFTVELOCITY", Drive.GetLeftVelocity());
-  frc::SmartDashboard::PutNumber("RIGHTVELOCITY", Drive.GetRightVelocity());
+  RunClimb();
+
+    
+ //  std::cout << "YAW: " << Targeting.ErrorAngle() << std::endl << "PITCH: " << Targeting.ErrorRange() << std::endl;
 }
 
-void Robot::TestPeriodic() {}
+void Robot::TestPeriodic() {
+  if(DriverController.JustPressedPOV(0)) {
+    std::cout << "POV 0 PRESSED" << std::endl;
+  }
+  else if(DriverController.JustPressedPOV(180)) {
+    std::cout << "POV 180 PRESSED" << std::endl;
+  }
+  Shooter.TestShoot();
+ // RunIntake(); //ADD BACK
+  //Drive.TestDrive();
+  //Entry.TalonTest(DriverController.GetY());
+}
 
 void Robot::RunDrive() {
+   double turnGain = (DriverController.GetRawButton(RIGHT) ? STEER_GAIN : 0) - (DriverController.GetRawButton(LEFT) ? STEER_GAIN : 0);
    double driveX = fabs(DriverController.GetX()) < .05 ? 0 : DriverController.GetX();
-   double driveY = fabs(DriverController.GetY()) < .05 ? 0 : DriverController.GetY();
-   if(driveX == 0 && driveY == 0) {
+   double driveY = fabs(DriverController.GetY()) < .05 ? 0 : DriverController.GetY();//TODO reimplement angle control
+   double driveZ = fabs(DriverController.GetZ()) < .06 ? 0 : DriverController.GetZ();
+   driveX += turnGain;
+   driveZ += turnGain;
+   double driveT = fabs(DriverController.GetThrottle()) < .06 ? 0 : DriverController.GetThrottle();
+   crawling = driveX == 0 && driveY == 0 && (driveZ > 0 || driveT > 0);
+   if(driveX == 0 && driveY == 0 && driveZ == 0 && driveT == 0) {
      Drive.SetVelocity(0);
    }
-   else {
-         Drive.ManualDrive(driveY, driveX);
+   else if(!climbUnlock && (fabs(driveX) > 0 || fabs(driveY) > 0)) {
+     Drive.ManualDrive(driveY * currentSens, driveX * currentSens + turnGain, false);
+   //  Drive.ManualDrive(driveY, driveX);
+        //Drive.ManualDrive(driveY * currentSens, driveX - (DriverController.GetRawButton(LEFT) ?  STEER_GAIN : 0 ) + (DriverController.GetRawButton(RIGHT) ? STEER_GAIN : 0) * currentSens));
+
    }
+   //#if 0
+   else if(!climbUnlock && (DriverController.GetRawButton(SET_ANGLE) || DriverController.JustPressed(SET_ANGLE))) {
+     if(DriverController.GetRawButton(SET_ANGLE)) {
+       if(firstAngling) { 
+              Drive.SetAngle();
+              firstAngling = false;
+              autoAngling = true;
+
+       }
+       Drive.TurnToAngle(DriverController.GetDirectionDegrees());
+    }
+    else {
+      firstAngling = true;
+      autoAngling = false;
+    }  
+   }
+   else {
+     std::cout << "TRYING TO CRAWL: " << driveT << ", " << driveZ << std::endl;
+      Drive.ManualDrive(driveT * currentSens * .5, driveZ * currentSens * .5 + MINIMUM_FORCE * DriveTrain::SignOf(driveZ) + turnGain * .2, false);
+   }
+//#endif
+
   // if(driveX == 0 || driveY == 0) {
-     std::cout << driveY << ", " << driveX << std::endl; //implement speed feedback loop for stopping when released trigger
+    //
+   //  std::cout << driveY << ", " << driveX << ", " << currentSens << std::endl; //done implement speed feedback loop for stopping when released trigger
+  //   if(DriverController.GetRawButton(1)) {
+    //        Drive.TurnToAngle(45);
+            
+      //     std::cout << "DISTANCE: " << Targeting.Distance() << std::endl;
+   //  }
+     //if(DriverController.JustPressed(2)) {
+      // Drive.SetAngle();
+    // }
 
  //  }
 
 }
 void Robot::RunShooter() {
-  double storedShootSpeed = 0;
+  /*double storedShootSpeed = 0;
   if(DriverController.JustPressed(SHOOT)) {
     Shooter.Shoot();
+
   }
   if(DriverController.JustPressed(SHOOTER_SPIN_MAX)) {
     Shooter.SpinUpMax();
@@ -173,18 +279,41 @@ void Robot::RunShooter() {
   }
   else if(DriverController.GetRawButton(SET_SPEED)) {
     storedShootSpeed = DriverController.GetX();
+  }*/
+  if(DriverController.JustPressed(SHOOT)) {
+    Shooter.Shoot();
+    Entry.SwitchState();
+    std::cout << "PRESSED SHOOT" << std::endl;
+  }
+  else if(DriverController.JustPressedPOV(SPIN_UP)) {
+    Shooter.SpinUpPartial(currentShoot);
+  }
+  else if(DriverController.JustPressedPOV(SPIN_DOWN)) {
+    Shooter.StopSpin();
   }
   
 }
 void Robot::RunAim() {
   if(DriverController.GetRawButton(AIM)) {
-    Drive.Aim(Targeting.ErrorAngle());
-    Shooter.Aim(Targeting.Distance());
+    //Targeting.SwitchMode(false);
+    std::cout << "AIM PRESSED" << std::endl;
+   // Drive.Aim(Targeting.ErrorAngle());
+    aiming = true;
+    Targeting.SetLight(1);
+  //  Shooter.Aim(Targeting.Distance());
+  }
+  else {
+    aiming = false;
+    Targeting.SetLight(0);
+  }
+  if(DriverController.JustPressed(CAMERA)) {
+    Targeting.SwitchMode();
+    std::cout <<"SWTICH" << std::endl;
   }
 }
 
 void Robot::RunIntake() {
-  double storedIntakeSpeed = 0;
+ /* double storedIntakeSpeed = 0;
   if(DriverController.JustPressed(INTAKE_SPIN_MAX)) {
     Entry.SpinUpMax();
   }
@@ -202,8 +331,172 @@ void Robot::RunIntake() {
   }
   else {
     Entry.Stop();
+  }*/
+  #if 0
+  if(DriverController.JustPressed(INTAKE_TOGGLE)) {
+    Entry.Toggle(currentIntake);
+  }
+  #endif
+  if(DriverController.JustPressed(UNJAM)) {
+    Entry.Unjam();
+  }
+ // #endif
+  if(DriverController.GetRawButton(INTAKE_TOGGLE)) {
+    if(firstIntake) {
+      Targeting.PickSide();
+      firstIntake = false;
+    }
+    Drive.Aim(Targeting.BallErrorX()); //TODO Switching used camera problem; must be fixed
+    if(Targeting.BallErrorX() < ANGLE_TOLERANCE) {
+      Drive.MoveToDistance(DistanceConvert(Targeting.BallDistance()));
+      if(Targeting.BallDistance() < INTAKE_DISTANCE) {
+        Entry.SpinUpPartial(currentIntake);
+      }
+      else {
+        Entry.Stop();
+      }
+    }
+  }
+  else {
+    firstIntake = true;
+  }
+
+}
+
+void Robot::RunArrays() { //TODO fix starting and max
+  if(DriverController.GetRawButton(SENS_ADJUST)) {
+    if(DriverController.JustPressedPOV(0) && sensI < 9) {
+      sensI++;
+    //  sensBool[sensI] = 1;
+    }
+    else if(DriverController.JustPressedPOV(180) && sensI > 0) {
+    //  sensBool[sensI] = 0;
+      sensI--;
+    }
+    currentSens = sensitivity[sensI];
+  }
+
+  else if(DriverController.GetRawButton(SH_ADJUST)) {
+    if(DriverController.JustPressedPOV(0) && shootI < 19) {
+      shootI++;
+     // shootBool[shootI] = 1;
+    }
+    else if(DriverController.JustPressedPOV(180) && shootI > 0) {
+     // shootBool[shootI] = 0;
+      shootI--;
+    }
+    currentShoot = shootSpeed[shootI];
+   }
+
+else if(DriverController.GetRawButton(IN_ADJUST)) {
+    if(DriverController.JustPressedPOV(0) && intakeI < 19) {
+      intakeI++;
+    //  intakeBool[intakeI] = 1;
+    }
+    else if(DriverController.JustPressedPOV(180) && intakeI > 0) {
+    //  intakeBool[intakeI] = 0;
+      intakeI--;
+    }
+    currentIntake = intakeSpeed[intakeI];
+   }
+  if(sensI <= 2) {
+    lowSens = true;
+    highSens = false;
+  }       
+  else if(sensI >= 7) {
+    lowSens = false;
+    highSens = true;
+  }
+  else {
+    lowSens = false;
+    highSens = false;
   }
 }
+
+void Robot::RunClimb() {
+  if(DriverController.JustPressed(CLIMB_UNLOCK)) {
+    climbUnlock = !climbUnlock;
+  }
+  if(climbUnlock && fabs(DriverController.GetThrottle()) > .05) {
+    Climb.Retract(DriverController.GetY());
+  }
+}
+
+std::string Robot::Status() {
+ // const std::string commands[5] = {"AUTO_ANGLE", "AUTO_DRIVE", "AUTO_AIM", "AUTO_SHOOT", "AUTO_STOP"};
+// TODO add unjam back
+ /*
+ Drive: low sensitivity warning, high sens warning, auto angling, crawling, aiming
+ Intake: auto picking up, intake on, ball acquired
+ Shooter: spin up complete, ready to shoot, spinning up
+ Climber: elevating, retracting
+ */
+  std::string output;
+  switch(wayPointSet->command) {
+    case AUTO_ANGLE:
+     output = "Autonomous Angling";
+     break;
+    case AUTO_DRIVE: 
+      output = "Autonomous Driving";
+      break;
+    case AUTO_AIM: 
+      output = "Autonomous Aiming";
+      break;
+    case AUTO_SHOOT:
+      output = "Autonomous Shooting";
+      break;
+    default:
+      output = "";
+      break;
+  }
+ 
+
+  if(aiming) {
+    output = output + "\nAiming";
+  }
+  if(lowSens) {
+    output = output + "\nLow Sensitivity Warning";
+  }
+  else if(highSens) {
+    output = output + "\nHigh Sensitivity Warning";
+  }
+  if(autoAngling) {
+    output = output + "\nAuto Angling";
+  }
+
+  if(crawling) {
+    output = output + "\nCrawling";
+  }
+  if(DriverController.GetRawButton(INTAKE_TOGGLE)) { 
+    output = output + "\nAuto Collecting";
+  }
+  if(Targeting.TargetingAvailable()) {
+    output = output + "\nTargeting Available";
+  }
+  if(Targeting.CollectionAvailable()) {
+    output = output + "\nCollection Available";
+  }
+  if(Entry.JustPressedSwitchEntry()) {
+    output = output + "\nBall Collected";
+  }
+
+  if(climbUnlock) {
+    if(DriverController.GetY() > .02) {
+      output = output + "\nRaising Climber";
+    }
+    else if (DriverController.GetY() < -.02) {
+      output = output + "\nLowering Climber";
+    }
+  }
+  return output;
+
+}
+
+double Robot::DistanceConvert(double input) {
+  return (input + ADD_CONVERT) * MULTIPLY_CONVERT;
+}
+
+
 #ifndef RUNNING_FRC_TESTS
 int main() { return frc::StartRobot<Robot>(); }
 #endif

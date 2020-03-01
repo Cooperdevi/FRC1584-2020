@@ -24,6 +24,9 @@ class Launcher {
   void StopShooting();
   void SetFollower();
   int Capacity();
+  void TestShoot();
+  double Speed();
+  double FollowerSpeed();
 private:
   ctre::phoenix::motorcontrol::can::WPI_TalonSRX ShooterMain, ShooterFollow;
   ctre::phoenix::motorcontrol::can::WPI_TalonSRX Trigger;

@@ -17,6 +17,6 @@ void Climber::Release() {
  //to be implemented 
 }
 
-void Climber::Retract() {
-    ClimberMotor.Set(RETRACT_SPEED);
+void Climber::Retract(double speed) {
+    ClimberMotor.Set(speed);
 }

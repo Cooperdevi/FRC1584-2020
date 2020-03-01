@@ -12,7 +12,7 @@ class Climber {
  public:
   Climber();
   void Release();
-  void Retract();
+  void Retract(double speed);
   
  private:
     ctre::phoenix::motorcontrol::can::WPI_TalonSRX ClimberMotor;

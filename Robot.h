@@ -11,12 +11,15 @@
 
 #include <frc/TimedRobot.h>
 #include <frc/smartdashboard/SendableChooser.h>
+#include "frc/shuffleboard/Shuffleboard.h"
 #include "DriveTrain.h"
 #include "DriverInput.h"
 #include "OurDefines.h"
 #include "Launcher.h"
 #include "Intake.h"
 #include "VisionProcessing.h"
+#include "Climber.h"
+#include "frc/PowerDistributionPanel.h"
 
 typedef enum{AUTO_ANGLE, AUTO_DRIVE, AUTO_AIM, AUTO_SHOOT, AUTO_STOP} command_t;
 typedef struct {
@@ -39,7 +42,10 @@ class Robot : public frc::TimedRobot {
   frc::SendableChooser<std::string> m_chooser;
   const std::string kAutoNameDefault = "Default";
   const std::string kAutoNameCustom = "My Auto";
+ frc::SendableChooser<int> m_positionChooser;
+
   std::string m_autoSelected;
+  frc::PowerDistributionPanel pdp;
   void RunDrive();
   void RunShooter();
   void RunAim();
@@ -51,6 +57,7 @@ class Robot : public frc::TimedRobot {
   Launcher Shooter;
   Intake Entry;
   VisionProcessing Targeting;
+  Climber Climb;
   int position;
   wayPoint_t* wayPointSet;
   wayPoint_t* WP[5] =	{WP0, WP1, WP2, WP3, WP4};
@@ -84,10 +91,30 @@ class Robot : public frc::TimedRobot {
     {AUTO_STOP, 0, 0}
   };
   wayPoint_t WP4[2] = {
-    {AUTO_DRIVE, 40000, 0},
+    {AUTO_DRIVE, 10000, 0},
     {AUTO_STOP, 0, 0}
   };
   double originalDistance;
   bool firstAngle, firstDrive;
+  double sensitivity[10] = {.1, .15, .2, .25, .3, .4, .5, .7, .85, 1};
+  double shootSpeed[20] = {.05, .1, .15, .2, .25, .3, .35, .4, .45, .5, .55, .6, .65, .7, .75, .8, .85, .9, .95, 1};
+  double intakeSpeed[20] = {.05, .1, .15, .2, .25, .3, .35, .4, .45, .5, .55, .6, .65, .7, .75, .8, .85, .9, .95, 1};
+  //int sensBool[10] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+//  int shootBool[20] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+//  int intakeBool[20] =  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  double currentSens, currentShoot, currentIntake;
+  int sensI;// = 9;
+  int shootI;// = 9;
+  int intakeI;// = 9;
+  void RunArrays();
+  void RunClimb();
+  bool climbUnlock;
+  bool firstIntake;
+  std::string Status();
+  double DistanceConvert(double input);
+//  bool first = true;
+  bool aiming;
+  bool lowSens, highSens, autoAngling, firstAngling, crawling;
+
 
 };

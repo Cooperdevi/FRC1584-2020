@@ -10,8 +10,18 @@
 Launcher::Launcher() :
 ShooterMain(SHOOTER_MAIN), ShooterFollow(SHOOTER_FOLLOW), Trigger(TRIGGER), currentSpeed(0), CapacitySensor(US_PING, US_ECHO), Main(ShooterMain.GetSensorCollection()), Follower(ShooterFollow.GetSensorCollection()), desiredSpeed(0)
 {
+    ShooterFollow.ConfigSelectedFeedbackSensor(ctre::phoenix::motorcontrol::FeedbackDevice::CTRE_MagEncoder_Relative, 0, 30);
+    ShooterFollow.ConfigNominalOutputForward(0, 30);
+	ShooterFollow.ConfigNominalOutputReverse(0, 30);
+	ShooterFollow.ConfigPeakOutputForward(1, 30);
+	ShooterFollow.ConfigPeakOutputReverse(-1, 30);
+    ShooterFollow.Config_kF(0, 0.1097, 30);
+	ShooterFollow.Config_kP(0, 0.2, 30);
+	ShooterFollow.Config_kI(0, 0., 30);
+	ShooterFollow.Config_kD(0, 0., 30);
     ShooterFollow.Set(ctre::phoenix::motorcontrol::ControlMode::Velocity, Main.GetQuadratureVelocity());
 
+ // TODO configure pid for shooter follow
    // ShooterFollow.Set(ctre::phoenix::motorcontrol::ControlMode::Follower, SHOOTER_MAIN);
 }
 
@@ -93,5 +103,19 @@ void Launcher::SetFollower() {
         desiredSpeed = desiredSpeed/fabs(desiredSpeed);
     }
     ShooterFollow.Set(desiredSpeed);*/
+    std::cout << "SPEED OF SHOOTER: " << Main.GetQuadratureVelocity() << std::endl;
     ShooterFollow.Set(ctre::phoenix::motorcontrol::ControlMode::Velocity, Main.GetQuadratureVelocity());
+}
+
+void Launcher::TestShoot() {
+    ShooterMain.Set(1);
+    ShooterFollow.Set(1);
+}
+
+double Launcher::Speed() {
+    return Main.GetQuadratureVelocity();
+}
+
+double Launcher::FollowerSpeed() {
+    return Follower.GetQuadratureVelocity();
 }
