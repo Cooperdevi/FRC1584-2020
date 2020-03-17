@@ -40,12 +40,13 @@ class VisionProcessing {
   void SetLight(double set);
   void Run();
   double GetPose(int index);
+  void SetClose(bool input);
  // void TestDrive();
   private:
-  std::shared_ptr<NetworkTable> vision, viewing, ballL, ballR;
+  std::shared_ptr<NetworkTable> vision, viewing, ballL, ballR, ballC;
   nt::NetworkTableInstance inst;//, inst2;
  // nt::NetworkTable cameraTable;
-  nt::NetworkTableEntry TargetX, TargetY, DriverMode, TargetArea, ConstDriver, BallAreaL, BallAreaR, BallYawL, BallYawR, BallPitchL, BallPitchR, Pose;
+  nt::NetworkTableEntry TargetX, TargetY, DriverMode, TargetArea, ConstDriver, BallAreaL, BallAreaR, BallYawL, BallYawR, BallPitchL, BallPitchR, Pose, Pipeline, BallAreaC, BallYawC, BallPitchC;
   LIDARSensor DistanceFinder;
   int nearSide; //false for left, true for right]; -1 for left, 0 for both, 1 for right
 ctre::phoenix::motorcontrol::can::WPI_VictorSPX Light;
@@ -53,7 +54,7 @@ ctre::phoenix::motorcontrol::can::WPI_VictorSPX Light;
   frc::Rotation2d RobotToMainRotation;
   frc::Transform2d MainToBackTransformation;
   frc::Pose2d RobotToMainPose, RobotToBackPose;
-
+  bool closeDistance; //true for close
  // cs::UsbCamera IntakeCam = frc::CameraServer::GetInstance()->StartAutomaticCapture();
  //// nt::NetworkTable* TestTable;
 

@@ -6,15 +6,17 @@
 #define RF_TALON 12
 #define RR_TALON 13
 
-#define SHOOTER_MAIN 2
-#define SHOOTER_FOLLOW 3
-#define TRIGGER 9
-#define CLIMBER 14
-#define INTAKE_CAN 7
-#define LIGHT_CAN 8
+#define SHOOTER_MAIN 3
+#define SHOOTER_FOLLOW 4
+#define TRIGGER 100
+#define CLIMBER 9
+#define CLIMBER_FOLLOW 2
+#define INTAKE_CAN 6
+#define LIGHT_CAN 7
 //#define INTAKE_FOLLOW 8
-#define CONVEYOR_CAN 6
-
+#define CONVEYOR_CAN 8
+#define LIFT_CAN 11
+#define LOCK_CAN 12
 #define SERVO_PWM 0
 
 #define TRIGGER_TIME .2
@@ -107,7 +109,7 @@
 #define COMPRESSED_ANGLE 0
 #define UNCOMPRESSED_ANGLE 45
 
-#define CONVEYOR_SPEED -.6
+#define CONVEYOR_SPEED -.3
 
 #define MAX_ERROR 30 //TEST
 
@@ -121,3 +123,11 @@
 #define MAIN_TO_BACK 0.74295 //distance in meters from front port to back port
 
 #define AREA_TO_YAW 10
+
+
+#define HEIGHT_DIFF 68.25
+
+#define TOP_POSITION 1000000
+
+#define FEED_TIME .25
+#define FEED_SPEED .25

@@ -10,7 +10,7 @@
 #include <sstream>
 #include <string>
 VisionProcessing::VisionProcessing() :
-DistanceFinder(LIDAR_DIO), Light(LIGHT_CAN), MainToBackTranslation((units::meter_t)MAIN_TO_BACK, (units::meter_t)0.)
+DistanceFinder(LIDAR_DIO), Light(LIGHT_CAN), MainToBackTranslation((units::meter_t)MAIN_TO_BACK, (units::meter_t)0.), closeDistance(true)
 //DistanceFinder(frc::I2C::Port::kOnboard, 0x62)
  //  DistanceFinder(0)
 //  DistanceFinder(2, 3)
@@ -46,7 +46,12 @@ DistanceFinder(LIDAR_DIO), Light(LIGHT_CAN), MainToBackTranslation((units::meter
     BallYawR = ballR->GetEntry("targetYaw");
     BallPitchL = ballL->GetEntry("targetPitch");
     BallPitchR = ballR->GetEntry("targetPitch");
-    Pose = vision->GetEntry("Pose");
+    Pose = vision->GetEntry("targetPose");
+    Pipeline = vision->GetEntry("currentPipeline");
+    BallAreaC = ballC->GetEntry("targetArea");
+    BallPitchC = ballC->GetEntry("targetPitch");
+    BallYawC = ballC->GetEntry("targetYaw");
+
     
 
     //IntakeCam.
@@ -63,6 +68,7 @@ void VisionProcessing::Initialize() {
    // table = nt::NetworkTableInstance::GetDefault();
     //cameraTable = NetworkTable::GetTable("chameleon-vision/Microsoft LifeCam HD-3000");
     ConstDriver.SetBoolean(true);
+    Pipeline.SetDouble(0);
 
 //    DistanceFinder.startMeasuring();
 }
@@ -72,9 +78,8 @@ double VisionProcessing::ErrorRange() {
 }
 
 double VisionProcessing::ErrorAngle() {
-  #if 0
-    return TargetX.GetDouble(NOT_AVAILABLE);
-    #endif
+  /*if(closeDistance) {
+    std::cout << "POSE:" << GetPose(0) << ", " << GetPose(1) << ", " << GetPose(2) << std::endl;
     MainToBackTranslation = frc::Translation2d((units::meter_t)MAIN_TO_BACK, (units::meter_t)0.);
     RobotToMainTranslation = frc::Translation2d((units::meter_t)GetPose(0), (units::meter_t)GetPose(1));
     RobotToMainRotation = frc::Rotation2d((units::radian_t)(GetPose(2) * M_PI / 180));
@@ -83,14 +88,34 @@ double VisionProcessing::ErrorAngle() {
     MainToBackTransformation = frc::Transform2d(MainToBackTranslation, frc::Rotation2d((units::radian_t)0));
     RobotToBackPose = RobotToMainPose + MainToBackTransformation;
     frc::Translation2d temp = RobotToBackPose.Translation();
+    std::cout << "Robot To Back Pose: " << temp.X() << ", " << temp.Y() << ", " << temp.Norm() << std::endl;
     return (double)temp.Y();
+  }*/
+  return TargetX.GetDouble(NOT_AVAILABLE);
+    #if 0
+    std::cout << "POSE:" << GetPose(0) << ", " << GetPose(1) << ", " << GetPose(2) << std::endl;
+    MainToBackTranslation = frc::Translation2d((units::meter_t)MAIN_TO_BACK, (units::meter_t)0.);
+    RobotToMainTranslation = frc::Translation2d((units::meter_t)GetPose(0), (units::meter_t)GetPose(1));
+    RobotToMainRotation = frc::Rotation2d((units::radian_t)(GetPose(2) * M_PI / 180));
+    RobotToMainPose = frc::Pose2d(RobotToMainTranslation, RobotToMainRotation);
+    MainToBackTranslation.RotateBy(RobotToMainRotation);
+    MainToBackTransformation = frc::Transform2d(MainToBackTranslation, frc::Rotation2d((units::radian_t)0));
+    RobotToBackPose = RobotToMainPose + MainToBackTransformation;
+    frc::Translation2d temp = RobotToBackPose.Translation();
+    std::cout << "Robot To Back Pose: " << temp.X() << ", " << temp.Y() << ", " << temp.Norm() << std::endl;
+    return (double)temp.Y();
+    #endif
 }
 
 double VisionProcessing::Distance() {
    // std::cout << "DISTANCE: " << DistanceFinder.getDistance() <<std::endl;
-   // return DistanceFinder.getDistance() / 2.54;
-   frc::Translation2d temp = RobotToBackPose.Translation();
-   return (double)temp.Norm();
+  //  return DistanceFinder.getDistance() / 2.54;
+ // if(!closeDistance) {
+            return HEIGHT_DIFF/tan(M_PI/180*(TargetY.GetDouble(0)));
+
+////  }
+  // frc::Translation2d temp = RobotToBackPose.Translation();
+ //  return (double)temp.Norm();
   //  return DistanceFinder.GetRangeInches();
 }
 
@@ -125,12 +150,23 @@ bool VisionProcessing::CollectionAvailable() {
 void VisionProcessing::PickSide() {
   double LeftDistance = BallPitchL.GetDouble(999999);
   double RightDistance = BallPitchR.GetDouble(999999);
-  if(LeftDistance - RightDistance < 2) {
+  double CenterDistance = BallPitchC.GetDouble(999999);
+  if(CenterDistance >= LeftDistance && CenterDistance >= RightDistance) {
+    nearSide = 0;
+  }
+  else if(LeftDistance > RightDistance && LeftDistance > CenterDistance) {
+    nearSide = -1;
+  }
+  else if(RightDistance > LeftDistance && RightDistance > CenterDistance) {
+    nearSide = 1;
+  }
+
+  /*if(LeftDistance - RightDistance < 2) {
     nearSide = 0;
   }
   else {
     nearSide = (LeftDistance < RightDistance ? -1 : 1);
-  }
+  }*/
 }
 
 double VisionProcessing::BallErrorX() {
@@ -143,15 +179,19 @@ double VisionProcessing::BallErrorX() {
   }
   return 0;
   #endif
+  
+
   switch(nearSide) {
     case -1 : 
-      return BallYawL.GetDouble(MAX_ERROR) - MAX_ERROR;
+      PickSide();
+      return -60;
       break;
     case 1 :
-      return BallYawR.GetDouble(-MAX_ERROR) + MAX_ERROR;
+      PickSide();
+      return 60;
       break;
     case 0 :
-      return (BallAreaR.GetDouble(-1) - BallAreaL.GetDouble(-1)) * AREA_TO_YAW;
+      return BallYawC.GetDouble(0);
       break;
   }
   return 0;
@@ -161,7 +201,7 @@ double VisionProcessing::BallErrorX() {
 
 double VisionProcessing::BallDistance() {
  // return (nearSide ? BallPitchR.GetDouble(9999999999) : BallPitchL.GetDouble(999999999999999999));
- switch(nearSide) {
+ /*switch(nearSide) {
    case -1 :
     return BallAreaL.GetDouble(0);
     break;
@@ -174,7 +214,8 @@ double VisionProcessing::BallDistance() {
   default :
     return 0;
     break;
- }
+ }*/
+ return 20/tan((BallPitchC.GetDouble(0) - 15) * M_PI / 180);
 }
 
 void VisionProcessing::SetLight(double set) {
@@ -185,5 +226,22 @@ void VisionProcessing::SetLight(double set) {
 }
 
 double VisionProcessing::GetPose(int index) {
+ /* switch(index) {
+    case 0: 
+      return HEIGHT_DIFF/tan(M_PI/180*(TargetY.GetDouble(0)));
+      break;
+    case 1: 
+      return TargetX.GetDouble(0);
+      break;
+    case 2:
+      return (GetPose(1) * M_PI / 180 + > -90 )
+
+  }*/
   return Pose.GetDoubleArray({0, 0, 0})[index];
+}
+
+
+void VisionProcessing::SetClose(bool input) {
+  closeDistance = input;
+  Pipeline.SetDouble(closeDistance ? 0 : 1);
 }

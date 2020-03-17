@@ -15,6 +15,7 @@ class Climber {
   void Retract(double speed);
   
  private:
-    ctre::phoenix::motorcontrol::can::WPI_TalonSRX ClimberMotor;
-
+    ctre::phoenix::motorcontrol::can::WPI_TalonSRX ClimberMotor, Follower;
+    ctre::phoenix::motorcontrol::SensorCollection& ClimberSensor;
+   // ctre::phoenix::motorcontrol::FeedbackDevice::SoftwareEmulatedSensor
 };

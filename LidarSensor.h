@@ -8,7 +8,7 @@ class LIDARSensor// : public frc::DigitalInput
 {
 private:
 	frc::Counter counter;
-	static constexpr double offset = -2.0;
+	static constexpr double offset = -7.0;
 	static constexpr double factor = 100000;
 	/* Based on your sensor, you will have different data.
 	 * Use multiple data points and a linear regression program

@@ -8,9 +8,12 @@
 #include "Climber.h"
 
 Climber::Climber():
-ClimberMotor(CLIMBER)
+ClimberMotor(CLIMBER), ClimberSensor(ClimberMotor.GetSensorCollection()), Follower(CLIMBER_FOLLOW)
 {
-    ClimberMotor.ConfigForwardLimitSwitchSource(ctre::phoenix::motorcontrol::LimitSwitchSource::LimitSwitchSource_FeedbackConnector, ctre::phoenix::motorcontrol::LimitSwitchNormal::LimitSwitchNormal_NormallyClosed);
+    ClimberMotor.ConfigReverseLimitSwitchSource(ctre::phoenix::motorcontrol::LimitSwitchSource::LimitSwitchSource_FeedbackConnector, ctre::phoenix::motorcontrol::LimitSwitchNormal::LimitSwitchNormal_NormallyClosed);
+    ClimberMotor.ConfigSelectedFeedbackSensor(ctre::phoenix::motorcontrol::FeedbackDevice::SoftwareEmulatedSensor);
+    Follower.Set(ctre::phoenix::motorcontrol::ControlMode::Follower, CLIMBER);
+  ////  ClimberSensor = (ClimberMotor.GetSensorCollection());
 }
 
 void Climber::Release() {
@@ -18,5 +21,8 @@ void Climber::Release() {
 }
 
 void Climber::Retract(double speed) {
+    if(speed > 0 && ClimberMotor.GetSelectedSensorPosition() == TOP_POSITION) {
+        speed = 0;
+    }
     ClimberMotor.Set(speed);
 }

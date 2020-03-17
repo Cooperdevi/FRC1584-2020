@@ -10,6 +10,11 @@
 Launcher::Launcher() :
 ShooterMain(SHOOTER_MAIN), ShooterFollow(SHOOTER_FOLLOW), Trigger(TRIGGER), currentSpeed(0), CapacitySensor(US_PING, US_ECHO), Main(ShooterMain.GetSensorCollection()), Follower(ShooterFollow.GetSensorCollection()), desiredSpeed(0)
 {
+   // ShooterMain.ConfigFactoryDefault();
+  //  ShooterFollow.ConfigFactoryDefault();
+    ctre::phoenix::motorcontrol::can::TalonSRXConfiguration temp;
+    ShooterMain.GetAllConfigs(temp);
+    ShooterFollow.ConfigAllSettings(temp);//ShooterMain.GetAllConfigs();
     ShooterFollow.ConfigSelectedFeedbackSensor(ctre::phoenix::motorcontrol::FeedbackDevice::CTRE_MagEncoder_Relative, 0, 30);
     ShooterFollow.ConfigNominalOutputForward(0, 30);
 	ShooterFollow.ConfigNominalOutputReverse(0, 30);
@@ -108,7 +113,7 @@ void Launcher::SetFollower() {
 }
 
 void Launcher::TestShoot() {
-    ShooterMain.Set(1);
+ //   ShooterMain.Set(1);
     ShooterFollow.Set(1);
 }
 

@@ -11,6 +11,12 @@
 #include "OurDefines.h"
 #include "frc/DigitalInput.h"
 #include "frc/Servo.h"
+#include "frc/Timer.h"
+#include <iostream>
+#include <chrono>
+#include <thread>
+
+
 class Intake {
  public:
   Intake();
@@ -28,8 +34,10 @@ class Intake {
   void SwitchState();
   void SwitchState(bool targetState);
   bool GetState();
+  void TakeIn();
+  void Feed();
   private: 
-    ctre::phoenix::motorcontrol::can::WPI_VictorSPX IntakeMain, Conveyor;
+    ctre::phoenix::motorcontrol::can::WPI_VictorSPX IntakeMain, Conveyor, Lift, Lock;
     ctre::phoenix::motorcontrol::can::WPI_TalonSRX Test;
     //, /*IntakeFollow,*/ Conveyor;
     void SetIntakeSpeed(double speed) {
@@ -40,5 +48,6 @@ class Intake {
     bool firstTime;
     frc::Servo Compressor;
     bool state; //false for intake, true for feeding
-
+    bool gotBall;
+  frc::Timer IntakeTimer;
 };

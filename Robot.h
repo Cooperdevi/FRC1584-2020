@@ -19,6 +19,7 @@
 #include "Intake.h"
 #include "VisionProcessing.h"
 #include "Climber.h"
+#include "frc/Timer.h"
 #include "frc/PowerDistributionPanel.h"
 
 typedef enum{AUTO_ANGLE, AUTO_DRIVE, AUTO_AIM, AUTO_SHOOT, AUTO_STOP} command_t;
@@ -115,6 +116,7 @@ class Robot : public frc::TimedRobot {
 //  bool first = true;
   bool aiming;
   bool lowSens, highSens, autoAngling, firstAngling, crawling;
-
+  bool autonomous;
+  frc::Timer ShootTimer, FeedTimer;
 
 };
